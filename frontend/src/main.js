@@ -24,14 +24,17 @@ Vue.prototype.$http.interceptors.response.use(response => {
 }, error => {
   if (error.response.status === 401) {
     alert('로그인이 필요합니다.')
+    router.replace({ name: 'SignIn' })
+  } else if (error.response.status === 405) {
+    alert('허용 되지 않는 접근입니다.')
+    router.replace({ name: 'SignIn' })
   }
   // else if (error.response.status === 500) {
   //   alert('잘못된 접근입니다.')
   // }
-  router.replace({ name: 'SignIn' })
-
   return Promise.reject(error.response)
 })
+
 Vue.prototype.$eventBus = new Vue()
 Vue.config.productionTip = false
 Vue.use(FullCalendar)

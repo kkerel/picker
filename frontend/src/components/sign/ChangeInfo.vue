@@ -3,15 +3,19 @@
   <div>
     <div class="name_wrap">
       <div class="title">이름</div>
-      <div><input type="text" placeholder="이름을 입력해주세요" :value="solutionAccount.name" ref="name"></div>
+      <div><input type="text" placeholder="이름을 입력해주세요" v-model="accountName" ref="name"></div>
     </div>
-    <div class="affiliation_wrap">
-      <div class="title">소속</div>
-      <div class="affiliation_select"><ui-select :selectData="selectData"/></div>
+    <div class="name_wrap">
+      <div class="title">회사</div>
+      <div><input type="text" placeholder="회사명을 입력해주세요" v-model="accountCompany" ref="company"></div>
+    </div>
+    <div class="name_wrap">
+      <div class="title">연락처</div>
+      <div><input type="text" placeholder="연락처를 입력해주세요" v-model="contactNumber" ref="contact_number"></div>
     </div>
     <div class="pw_wrap">
       <div class="title">비밀번호</div>
-      <div><input type="password" placeholder="현재 바밀번호를 입력해주세요" v-model="currentPassword"></div>
+      <div><input type="password" placeholder="현재 비밀번호를 입력해주세요" v-model="currentPassword"></div>
     </div>
     <p class="change_btn">
       <button @click="modify">변경</button>
@@ -20,29 +24,27 @@
 </template>
 
 <script>
-import Select from '@/components/ui/Select'
-
 export default {
-  components: {
-    'ui-select': Select
-  },
   created () {
     this.solutionAccount = this.$store.state.solutionAccount
-    this.selectData.emptyText = this.solutionAccount.affiliation
+    this.accountName = this.solutionAccount.name
+    this.accountCompany = this.solutionAccount.company
+    this.contactNumber = this.solutionAccount.contact_number
   },
   data () {
     return {
-      selectData: {
-        emptyText: '소속을 선택해주세요',
-        textList: [
-          '커뮤니케이션본부-기획1팀',
-          '커뮤니케이션본부-기획2팀',
-          '커뮤니케이션본부-기획3팀',
-          '연구개발본부',
-          '그외 기타본부'
-        ]
-      },
+      accountName: '',
+      accountCompany: '',
+      contactNumber: '',
       currentPassword: ''
+    }
+  },
+  watch: {
+    contactNumber (val) {
+      if (val != null) {
+        val = val.replace(/[^0-9]/g, '')
+        this.contactNumber = val.replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, '$1-$2-$3')
+      }
     }
   },
   methods: {
@@ -53,17 +55,20 @@ export default {
         const success = res.data.success
         if (success === 'YES') {
           this.$http.put('/users/' + this.$store.state.solutionAccount.id, {
+            username: this.$store.state.solutionAccount.username,
+            password: this.currentPassword,
             name: this.$refs.name.value,
-            affiliation: this.selectData.emptyText,
-            password: this.currentPassword
+            company: this.$refs.company.value,
+            contact_number: this.$refs.contact_number.value
           }).then(res => {
-            alert('개인정보 변경이 완료되었습니다')
+            alert('변경사항 저장이 완료되었습니다.')
             this.$store.state.solutionAccount.name = this.$refs.name.value
-            this.$store.state.solutionAccount.affiliation = this.selectData.emptyText
+            this.$store.state.solutionAccount.company = this.$refs.company.value
+            this.$store.state.solutionAccount.contact_number = this.$refs.contact_number.value
             this.$router.push({ name: 'Account' })
           })
         } else {
-          alert('현재 비밀번호가 일치하지 않습니다')
+          alert('현재 비밀번호가 일치하지 않습니다.')
         }
       })
     }

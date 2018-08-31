@@ -34,6 +34,14 @@
         </div>
         <div class="post_mean_wrap section_widget section_bottom">
           <div class="section_title">게시물 TOP5 평균</div>
+          <div class="scheduler-box-prologue">
+            <div class="hover"><img src="../../assets/images/icon/hashtag_i.jpg" alt=""></div>
+            <div class="hover_view">
+              <div class="hover_inner_view">
+                <div>최근 30일 간 내 계정의 Top5 게시물 성과의 평균입니다.</div>
+              </div>
+            </div>
+          </div>
           <div class="section_contents">
             <!-- 게시물 TOP5 평균 -->
             <div class="post_figure">
@@ -68,7 +76,7 @@
             </div>
             <!-- 게시물 TOP5 -->
             <div class="post_img_wrap">
-              <ul>
+              <ul class="post_inner_wrap">
                 <ui-post-thumbnail class="account_img average_img" v-for="(media, index) in bestMedias" :key="'top-' + index" :media="media"/>
               </ul>
             </div>
@@ -77,7 +85,6 @@
         <div class="calender_chart section_widget section_bottom">
           <div class="profile_title_inner">
             <div class="section_title">프로필 뷰</div>
-            <ui-calendar v-model="range"/>
           </div>
           <div class="chart">
             <area-chart/>
@@ -95,12 +102,18 @@
             <stacked-row-chart/>
           </div>
         </div>
-        <div class="follower_chart section_widget last_section_widget">
+        <div class="buzz_chart section_widget last_section_widget">
           <div class="section_title">버즈량</div>
+          <div class="scheduler-box-prologue">
+            <div class="hover"><img src="../../assets/images/icon/hashtag_i.jpg" alt=""></div>
+            <div class="hover_view">
+              <div class="hover_inner_view">
+                <div>내 브랜드가 사용자에 의해 얼마나 언급되고 있는지 <br/>나타내는 일자별 지표입니다. 해시태그 목록을 수정하려면<br/> 우측 버튼을 클릭 해주세요.</div>
+              </div>
+            </div>
+          </div>
           <div class="chart">
-            <stacked-column-chart v-if="buzzContentInsight"
-                                  :stackedColumnChartRows="buzzContentInsight"
-                                  :stackedColumnChartType="stackedColumnChartType"/>
+            <stacked-column-chart v-if="buzzContentInsight" :stackedColumnChartRows="buzzContentInsight" :stackedColumnChartType="stackedColumnChartType"/>
           </div>
         </div>
       </div>
@@ -109,9 +122,9 @@
 </template>
 
 <script>
-import Calendar from '@/components/ui/Calendar'
-import account from '@/components/ui/Account'
-import PostThumbnail from '@/components/ui/PostThumbnail'
+import Calendar from '@/components/ui/common/Calendar'
+import account from '@/components/ui/account/Account'
+import PostThumbnail from '@/components/ui/post/PostThumbnail'
 import StackedColumnChart from '@/components/chart/StackedColumnChart'
 import StackedComboChart from '@/components/chart/StackedComboChart'
 import AreaChart from '@/components/chart/AreaChart'
@@ -200,11 +213,21 @@ export default {
     .account_right{float:right; padding:38px 0px;}
   }
   .section_contents{float:right;
-    .post_img_wrap{width:100%; display:table;}
+    .post_img_wrap{width:100%; display:table;
+      .post_inner_wrap{display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; grid-column-gap: 0.5em; grid-row-gap: 0.5em;
+        li{display: table;
+          .img_inner_wrap{display: table-cell;vertical-align: middle;}
+        }
+      }
+    }
   }
   .post_figure{position:absolute; top:50%; left:22%; transform:translate(0%, -50%);}
   .post_mean_wrap{position:relative; background:#fff; padding:40px;
-    .section_title{float:left; padding:29px 0px; display:table;}
+    .section_title{display:inline-block; vertical-align:middle;}
+  }
+  .buzz_chart{
+    .section_title{display:inline-block; vertical-align:middle;}
+    .hover_view{top:-100px; background:url(../../assets/images/icon/view_bg.png) left 70px no-repeat;}
   }
 }
 @media all and (min-width: 768px) and (max-width: 1730px){
@@ -213,12 +236,23 @@ export default {
   .post_mean_wrap{
     .section_title{float:none; padding-bottom:0px;}
     .post_img_wrap{width:100%; display:table;
-      .account_img{width:20%; height:auto; margin-left:0px;
+      .account_img{width:100%; height:auto; margin-left:0px; display:inline-block!important;
         img{width:100%; height:auto;}
       }
     }
   }
   .section_contents{float:none;}
+  }
+}
+.scheduler-box-prologue{display:inline-block; vertical-align:middle; letter-spacing:0px; position:relative; margin-left:5px;
+  .hover{cursor:pointer;
+    img{width:auto; height:auto; border:0px;}
+    &:hover{
+      & + .hover_view{display:block;}
+    }
+  }
+  .hover_view{display:none; width:305px; position:absolute; top:-70px; left:5px; z-index:1; background:url(../../assets/images/icon/view_bg.png) left 42px no-repeat; color:#fff; font-size:12px; padding-bottom:15px;
+    .hover_inner_view{background:#464160; padding:14px;}
   }
 }
 </style>

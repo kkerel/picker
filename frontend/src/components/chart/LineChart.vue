@@ -56,7 +56,9 @@ export default {
         legend: {
           position: 'top'
         },
-        pointSize: 5
+        pointSize: 5,
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   },
@@ -66,6 +68,22 @@ export default {
   watch: {
     participationRateRows (newVal, oldVal) {
       this.rows = newVal
+
+      var min = 0
+      var max = 0
+
+      for (var i = 0; i < newVal.length; i++) {
+        if (newVal[i][1]) {
+          min = (min === 0) ? newVal[i][1] : (min >= newVal[i][1]) ? newVal[i][1] : min
+          max = (max === 0) ? newVal[i][1] : (max <= newVal[i][1]) ? newVal[i][1] : max
+        }
+
+        if (newVal[i][2]) {
+          min = (min === 0) ? newVal[i][2] : (min >= newVal[i][2]) ? newVal[i][2] : min
+          max = (max === 0) ? newVal[i][2] : (max <= newVal[i][2]) ? newVal[i][2] : max
+        }
+      }
+      this.options.vAxis.maxValue = max
     }
   },
   methods: {

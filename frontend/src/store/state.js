@@ -6,7 +6,9 @@ export default {
     role: '',
     language: '',
     active: '',
-    affiliation: ''
+    company: '',
+    contact_number: '',
+    valid: ''
   },
 
   fbAccount: {

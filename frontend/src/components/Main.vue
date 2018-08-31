@@ -24,6 +24,13 @@ export default {
     'ui-aside': Aside,
     'ui-footer': Footer
   },
+  watch: {
+    '$route' (to, from) {
+      window.scrollTo(0, 0)
+      // console.log('route watch', this.$el.querySelector('#main_section'))
+      // console.log(to, from)
+    }
+  },
   created () {
     // console.log('created Main', this.$router.currentRoute.path)
     // this.$router.push({ name: 'Account' })

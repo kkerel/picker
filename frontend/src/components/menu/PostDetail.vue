@@ -22,7 +22,7 @@
               <div>
                 <input type="radio" value="impressions" id="impressions" v-model="selectedParticipationRate"><label for="impressions">노출</label>
                 <input type="radio" value="reach" id="reach" v-model="selectedParticipationRate"><label for="reach">도달</label>
-                <input type="radio" value="followers" id="followers" v-model="selectedParticipationRate"><label for="followers">팔로워 수</label>
+                <!-- <input type="radio" value="followers" id="followers" v-model="selectedParticipationRate"><label for="followers">팔로워 수</label> -->
               </div>
             </div>
           </div>
@@ -33,7 +33,7 @@
         <div class="post_carousel section_bg">
           <p class="carousel_prologue">현재 게시물과 비교하고 싶은 게시물을 선택해주세요.</p>
           <div class="post_inner_carousel">
-            <slick ref="slick" :options="slickOptions" @afterChange="handleAfterChange" @beforeChange="handleBeforeChange">
+            <slick ref="slick" :options="slickOptions">
               <slide v-for="(carouselMedia, index) in carouselMedias" :key="'carousel-' + index">
                 <img v-if="carouselMedia.thumbnail_url"
                      :src="carouselMedia.thumbnail_url"
@@ -50,10 +50,9 @@
   </div>
 </template>
 <script>
-import PostView from '@/components/ui/PostView'
+import PostView from '@/components/ui/post/PostView'
 import StackedColumnChart from '@/components/chart/StackedColumnChart'
 import LineChart from '@/components/chart/LineChart'
-import Constant from '../../constant'
 import Slick from 'vue-slick'
 
 export default {
@@ -65,53 +64,40 @@ export default {
     Slick
   },
   created () {
-    window.scrollTo(0, 0)
-    const mediaId = this.$route.params.id
-
-    // 미디어
-    this.$http.get('/instagram/' + mediaId + '/detail', {
-      params: {
-        fb_access_token: localStorage.getItem('fb-access-token')
+    this.getMediaDetail(this.mediaId)
+    this.getMediaComments(this.mediaId)
+    this.setParticipationChart(this.mediaId)
+    this.setCarouselMedias()
+    this.$eventBus.$once('IgAccountChanged', this.replaceRoute)
+  },
+  data () {
+    return {
+      media: {},
+      mediaId: this.$route.params.id,
+      comments: [],
+      mediaInsights: [],
+      participationDegreeRows: [],
+      stackedColumnChartType: 'participationDegree',
+      participationRateRows: [],
+      selectedParticipationRate: 'impressions',
+      impressionsRows: [],
+      reachRows: [],
+      // followersRows: [],
+      compareImpressionsRows: [],
+      compareReachRows: [],
+      // compareFollowersRows: [],
+      carouselMedias: [],
+      carouselMediaList: this.$store.state.accountMedias,
+      slickOptions: {
+        adaptiveHeight: false,
+        draggable: true,
+        edgeFriction: 0.30,
+        focusOnSelect: true,
+        infinite: false,
+        slidesToShow: 8,
+        slidesToScroll: 8
       }
-    }).then(res => {
-      this.media = res.data.data
-    })
-
-    this.$http.get('/instagram/' + mediaId + '/all_comments', {
-      params: {
-        fb_access_token: localStorage.getItem('fb-access-token')
-      }
-    }).then(res => {
-      this.comments = res.data.data
-    })
-
-    // 참여도 & 참여율 차트
-    this.$http.get('/ig_media_insight/' + mediaId)
-      .then(res => {
-        const mediaInsights = res.data.data
-
-        mediaInsights.forEach((mediaInsight, index) => {
-          const day = 'Day' + (index + 1)
-          const engagement = (mediaInsight.engagement === 0 ? mediaInsight.carousel_album_engagement : mediaInsight.engagement)
-          const impressions = (mediaInsight.impressions === 0 ? mediaInsight.carousel_album_impressions : mediaInsight.impressions)
-          const reach = (mediaInsight.reach === 0 ? mediaInsight.carousel_album_reach : mediaInsight.reach)
-          const follower = mediaInsight.followers_count
-
-          // 참여도
-          const participationDegreeRow = [day, mediaInsight.like_count, mediaInsight.comments_count, mediaInsight.saved]
-          this.participationDegreeRows.push(participationDegreeRow)
-
-          // 참여율 [날짜, 현재 미디어, 비교 미디어]
-          this.impressionsRows.push([day, this.setPercent(engagement / impressions), null])
-          this.reachRows.push([day, this.setPercent(engagement / reach), null])
-          this.followersRows.push([day, this.setPercent(engagement / follower), null])
-        })
-        this.participationRateRows = this.impressionsRows
-      })
-
-    // 비교 미디어 캐러셀
-    this.$store.dispatch(Constant.ADD_ACCOUNT_MEDIAS, {status: 'more'})
-    this.carouselMedias = this.carouselMediaList.data
+    }
   },
   watch: {
     selectedParticipationRate () {
@@ -122,9 +108,9 @@ export default {
         case 'reach':
           this.participationRateRows = this.reachRows
           break
-        case 'followers':
-          this.participationRateRows = this.followersRows
-          break
+        // case 'followers':
+        //   this.participationRateRows = this.followersRows
+        //   break
         default:
           break
       }
@@ -133,58 +119,75 @@ export default {
       this.reInit()
     }
   },
-  data () {
-    return {
-      media: {},
-      comments: [],
-      mediaInsights: [],
-      participationDegreeRows: [],
-      stackedColumnChartType: 'participationDegree',
-      participationRateRows: [],
-      selectedParticipationRate: 'impressions',
-      impressionsRows: [],
-      reachRows: [],
-      followersRows: [],
-      compareImpressionsRows: [],
-      compareReachRows: [],
-      compareFollowersRows: [],
-      carouselMedias: [],
-      carouselMediaList: this.$store.state.accountMedias,
-      slickOptions: {
-        slidesToShow: 8,
-        infinite: true,
-        accessibility: true,
-        adaptiveHeight: false,
-        arrows: true,
-        dots: true,
-        draggable: true,
-        edgeFriction: 0.30,
-        swipe: true
-      }
-    }
-  },
   methods: {
+    replaceRoute () {
+      if (this.$route.name === this.$options.name) {
+        this.$router.replace({name: 'Post'})
+      }
+    },
+    getMediaDetail (mediaId) {
+      this.$http.get('/instagram/' + mediaId + '/detail', {
+        params: {
+          fb_access_token: localStorage.getItem('fb-access-token')
+        }
+      }).then(res => {
+        this.media = res.data.data
+      })
+    },
+    getMediaComments (mediaId) {
+      this.$http.get('/instagram/' + mediaId + '/all_comments', {
+        params: {
+          fb_access_token: localStorage.getItem('fb-access-token')
+        }
+      }).then(res => {
+        this.comments = res.data.data
+      })
+    },
+    setParticipationChart (mediaId) {
+      this.$http.get('/ig_media_insight/' + mediaId).then(res => {
+        const mediaInsights = res.data.data
+
+        mediaInsights.forEach((mediaInsight, index) => {
+          const day = 'Day' + (index + 1)
+          const engagement = (mediaInsight.engagement === 0 ? mediaInsight.carousel_album_engagement : mediaInsight.engagement)
+          const impressions = (mediaInsight.impressions === 0 ? mediaInsight.carousel_album_impressions : mediaInsight.impressions)
+          const reach = (mediaInsight.reach === 0 ? mediaInsight.carousel_album_reach : mediaInsight.reach)
+          // const follower = mediaInsight.followers_count
+
+          // 참여도
+          const participationDegreeRow = [day, mediaInsight.like_count, mediaInsight.comments_count, mediaInsight.saved]
+          this.participationDegreeRows.push(participationDegreeRow)
+
+          // 참여율 [날짜, 현재 미디어, 비교 미디어]
+          this.impressionsRows.push([day, this.setPercent(engagement / impressions), null])
+          this.reachRows.push([day, this.setPercent(engagement / reach), null])
+          // this.followersRows.push([day, this.setPercent(engagement / follower), null])
+        })
+        this.participationRateRows = this.impressionsRows
+      })
+    },
+    setCarouselMedias () {
+      this.$http.get('/instagram/' + this.$store.state.account.id + '/media', {
+        params: {
+          fb_access_token: localStorage.getItem('fb-access-token'),
+          except_id: this.mediaId,
+          limit: 49
+        }
+      }).then(res => {
+        const data = res.data.data
+        this.carouselMedias = data
+      })
+    },
     setPercent (value) {
       return parseFloat((value * 100).toFixed(2))
     },
     compareMedia (compareMediaId) {
-      let elwrap = document.getElementById('container_inner_wrap')
-      let elbtns = elwrap.getElementsByClassName('slick-active')
-      for (let i = 0; i < elbtns.length; i++) {
-        elbtns[i].addEventListener('click', function () {
-          let current = document.getElementsByClassName('active')
-          console.log(current)
-          current[0].className = current[0].className.replace('active', '')
-          this.className += 'active'
-        })
-      }
-
       this.$http.get('/ig_media_insight/' + compareMediaId)
         .then(res => {
           const compareMediaInsights = res.data.data
           this.compareImpressionsRows = []
           this.compareReachRows = []
-          this.compareFollowersRows = []
+          // this.compareFollowersRows = []
 
           // 참여율 [날짜, 현재 미디어, 비교 미디어]
           compareMediaInsights.forEach((compareMediaInsight, index) => {
@@ -192,11 +195,11 @@ export default {
             const engagement = (compareMediaInsight.engagement === 0 ? compareMediaInsight.carousel_album_engagement : compareMediaInsight.engagement)
             const impressions = (compareMediaInsight.impressions === 0 ? compareMediaInsight.carousel_album_impressions : compareMediaInsight.impressions)
             const reach = (compareMediaInsight.reach === 0 ? compareMediaInsight.carousel_album_reach : compareMediaInsight.reach)
-            const follower = compareMediaInsight.followers_count
+            // const follower = compareMediaInsight.followers_count
 
             this.compareImpressionsRows.push([day, this.impressionsRows[index][1], impressions === 0 ? null : this.setPercent(engagement / impressions)])
             this.compareReachRows.push([day, this.reachRows[index][1], reach === 0 ? null : this.setPercent(engagement / reach)])
-            this.compareFollowersRows.push([day, this.followersRows[index][1], this.setPercent(engagement / follower)])
+            // this.compareFollowersRows.push([day, this.followersRows[index][1], this.setPercent(engagement / follower)])
           })
 
           switch (this.selectedParticipationRate) {
@@ -206,9 +209,9 @@ export default {
             case 'reach':
               this.participationRateRows = this.compareReachRows
               break
-            case 'followers':
-              this.participationRateRows = this.compareFollowersRows
-              break
+            // case 'followers':
+            //   this.participationRateRows = this.compareFollowersRows
+            //   break
             default:
               break
           }
@@ -227,14 +230,6 @@ export default {
         this.$refs.slick.create()
         this.$refs.slick.goTo(currIndex, true)
       })
-    },
-    handleAfterChange (event, slick, currentSlide) {
-    },
-    handleBeforeChange (event, slick, currentSlide, nextSlide) {
-      if (nextSlide % 8 === 1) {
-        this.$store.dispatch(Constant.ADD_ACCOUNT_MEDIAS, {status: 'more'})
-        this.carouselMedias = this.carouselMediaList.data
-      }
     }
   }
 }
@@ -265,11 +260,13 @@ export default {
     .carousel_prologue{font-weight:bold; color:#000; padding-bottom:10px;}
     .post_inner_carousel{padding: 15px 50px; border: 1px solid #ebebeb; position:relative;
       .VueCarousel-slide{background:#000; color:#fff; line-height:70px; text-align:center; border:10px solid #fff; cursor:pointer;
-        &:hover{border:10px solid #ffcf4d;}
+        &:hover{border:10px solid #8c7fd9;}
         img{width:100%; height:100%;}
       }
     }
+    .slick-current{
+      .VueCarousel-slide{border:10px solid #8c7fd9;}
+    }
   }
 }
-/* 슬릭 */
 </style>

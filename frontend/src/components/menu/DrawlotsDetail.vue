@@ -58,10 +58,10 @@
 </template>
 
 <script>
-import Calendar from '@/components/ui/Calendar'
-import PostView from '@/components/ui/PostView'
-import Search from '@/components/ui/Search'
-import Comment from '@/components/ui/Comment'
+import Calendar from '@/components/ui/common/Calendar'
+import PostView from '@/components/ui/post/PostView'
+import Search from '@/components/ui/common/Search'
+import Comment from '@/components/ui/drawlots/Comment'
 import RandomPick from '@/components/popup/RandomPick'
 
 export default {
@@ -87,6 +87,7 @@ export default {
     // 전체 댓글 목록
     this.loadComments()
     this.$eventBus.$on('loadComments', this.loadComments)
+    this.$eventBus.$once('IgAccountChanged', this.replaceRoute)
   },
   beforeDestroy () {
     this.$eventBus.$off('loadComments')
@@ -108,12 +109,19 @@ export default {
     }
   },
   methods: {
+    replaceRoute () {
+      if (this.$route.name === this.$options.name) {
+        this.$router.replace({name: 'Drawlots'})
+      }
+    },
     changeComments (comments) {
       this.filteredComments = comments
     },
     keyEvent () {
       if (event.keyCode === 9 || event.keyCode === 13) {
-        if (this.hashValue !== '') {
+        if (this.hashValue.indexOf('#') >= 0) {
+          alert('#를 제외한 단어만 입력해 주세요.')
+        } else if (this.hashValue !== '') {
           this.hashData.push('#' + this.hashValue)
           this.hashValue = ''
         }
@@ -147,6 +155,7 @@ input[type="radio"]:checked + label:before{ background: url(../../assets/images/
 
 #container_inner_wrap{
   .selection_wrap{margin-top:40px; position:relative;}
+    .reply_pop{border:2px solid #f5f5f5;}
     .pick_btn{width:100%; text-align:center; margin-top:50px;
       button{width:105px; height:34px; line-height:34px; text-align:center; color:#fff; background:#000; border-radius:4px;}
     }

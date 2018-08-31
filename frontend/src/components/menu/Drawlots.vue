@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import Calendar from '@/components/ui/Calendar'
+import Calendar from '@/components/ui/common/Calendar'
 import CustomChart from '@/components/chart/CustomChart'
-import PostThumbnail from '@/components/ui/PostThumbnail'
+import PostThumbnail from '@/components/ui/post/PostThumbnail'
 
 import Constant from '../../constant'
 

@@ -4,7 +4,7 @@
     <div class="password_wrap">
       <div class="title">비밀번호</div>
       <!-- 적합할 경우 버튼 생성 success-->
-      <p><input type="password" placeholder="현재 비밀번호" class="success" v-model="currentPassword"></p>
+      <p><input type="password" placeholder="현재 비밀번호" v-model="currentPassword"></p>
       <p><input type="password" placeholder="새 비밀번호" v-model="newPassword"></p>
       <p><input type="password" placeholder="새 비밀번호 확인" v-model="newPasswordCheck"></p>
     </div>
@@ -17,10 +17,6 @@
 <script>
 
 export default {
-  components: {
-  },
-  created () {
-  },
   data () {
     return {
       currentPassword: '',
@@ -38,6 +34,7 @@ export default {
           if (this.newPassword === this.newPasswordCheck) {
             if (this.newPassword.length >= 8) {
               this.$http.put('/users/' + this.$store.state.solutionAccount.id, {
+                username: this.$store.state.solutionAccount.username,
                 password: this.newPassword
               }).then(res => {
                 alert('비밀번호 변경이 완료되었습니다')

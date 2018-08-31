@@ -48,7 +48,9 @@ export default {
           //   title: 'Comment',
           //   minValue: '0'
           // }
-        ]
+        ],
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   }

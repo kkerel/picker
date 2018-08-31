@@ -63,18 +63,6 @@
                     <ui-post-thumbnail v-for="(media, index) in medias" :key="'post-' + index" :media="media"/>
                   </template>
                 </ul>
-                <!-- <div>
-                  <StackGrid
-                    :columnWidth="397"
-                    :gutterX="25"
-                    :gutterY="25"
-                    :duration="0">
-                      <div class="thumbnail" v-for="(media, index) in medias" :key="index">
-                          <img v-if="media.thumbnail_url" :src="media.thumbnail_url" @click="switchToPostDetail(media.id)">
-                          <img v-else :src="media.media_url" @click="switchToPostDetail(media.id)">
-                      </div>
-                  </StackGrid>
-                </div> -->
                 <button class="more_btn" v-show="hasNext" @click="more()">더보기</button>
                 <!-- 데이터 없을경우 활성화-->
                 <!-- <div class="unknown_data">
@@ -92,9 +80,8 @@
 </template>
 
 <script>
-import Calendar from '@/components/ui/Calendar'
-import PostThumbnail from '@/components/ui/PostThumbnail'
-// import StackGrid from '@/components/ui/StackGrid'
+import Calendar from '@/components/ui/common/Calendar'
+import PostThumbnail from '@/components/ui/post/PostThumbnail'
 import Constant from '../../constant'
 import StackedCustomChart from '@/components/chart/StackedCustomChart'
 import StackGrid from 'vue-stack-grid-component'

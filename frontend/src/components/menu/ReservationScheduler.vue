@@ -6,7 +6,7 @@
           <div class="hover"><img src="../../assets/images/icon/hashtag_i.jpg" alt=""></div>
           <div class="hover_view">
             <div class="hover_inner_view">
-              <div>업로드는 광고가 아닌 일반컨텐츠만 가능하며, 현재는 싱글이미지 형태만 지원합니다.</div>
+              <div>업로드는 광고가 아닌 일반게시물만 가능하며,<br/>현재는 싱글이미지 형태만 지원합니다.</div>
             </div>
           </div>
         </div>
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import Scheduler from '@/components/ui/Scheduler'
+import Scheduler from '@/components/ui/reservation/Scheduler'
 
 export default {
   components: {

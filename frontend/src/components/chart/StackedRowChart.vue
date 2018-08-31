@@ -5,6 +5,7 @@
         :columns="columns"
         :rows="rows"
         :options="options"
+        ref="stackedRowChart"
       />
     </div>
 </template>
@@ -15,6 +16,17 @@ export default {
     rows () {
       return this.$store.state.accountFollowerDemographics.rows
     }
+  },
+  created () {
+    this.$eventBus.$on('mainWindowResize', this.onReceive)
+  },
+  methods: {
+    onReceive (event) {
+      this.$refs.stackedRowChart.drawChart()
+    }
+  },
+  beforeDestroy () {
+    this.$eventBus.$off('mainWindowResize')
   },
   data () {
     return {
@@ -36,6 +48,7 @@ export default {
         'role': 'tooltip'
       }],
       options: {
+        width: '100%',
         height: 400,
         colors: ['#84dab1', '#8c7fd9'],
         focusTarget: 'category',
@@ -48,7 +61,9 @@ export default {
         },
         hAxis: {
           format: '#,###;#,###'
-        }
+        },
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   }

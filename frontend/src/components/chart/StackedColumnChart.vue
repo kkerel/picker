@@ -5,6 +5,7 @@
       :columns="columns"
       :rows="rows"
       :options="options"
+      ref="stackColumnChart"
     />
   </div>
 </template>
@@ -46,6 +47,15 @@ export default {
       default:
         break
     }
+    this.$eventBus.$on('mainWindowResize', this.onReceive)
+  },
+  methods: {
+    onReceive (event) {
+      this.$refs.stackColumnChart.drawChart()
+    }
+  },
+  beforeDestroy () {
+    this.$eventBus.$off('mainWindowResize')
   },
   computed: {
     rows () {
@@ -57,6 +67,7 @@ export default {
       chartType: 'ColumnChart',
       columns: [],
       options: {
+        width: '100%',
         height: 400,
         colors: ['#84dab1', '#8c7fd9', '#ffec83'],
         focusTarget: 'category',
@@ -66,7 +77,9 @@ export default {
         },
         vAxis: {
           format: '#,###'
-        }
+        },
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   },

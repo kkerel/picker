@@ -61,7 +61,7 @@
 
 <script>
 
-import Select from '@/components/ui/Select'
+import Select from '@/components/ui/common/Select'
 export default {
   name: 'Popup',
   components: {
@@ -180,7 +180,7 @@ export default {
         }
       }
     }
-    .close_btn{position:absolute; top:-22px; right:-2px; z-index:10; cursor:pointer;}
+    .close_btn{position:absolute; top:-18px; right:0px; z-index:10; cursor:pointer;}
     .pop_content{width:258px; margin:35px auto;
       .pop_prologue{font-size:15px; font-weight:bold; padding-bottom:20px; border-bottom:3px solid #000;}
       .pop_select_wrap{width:100%; display:table; margin-top: 22px;

@@ -9,7 +9,9 @@ export default {
     state.solutionAccount.role = payload.role
     state.solutionAccount.language = payload.language
     state.solutionAccount.active = payload.active
-    state.solutionAccount.affiliation = payload.affiliation
+    state.solutionAccount.company = payload.company
+    state.solutionAccount.contact_number = payload.contact_number
+    state.solutionAccount.valid = payload.valid
   },
 
   [Constant.SET_FB_ACCOUNT]: (state, payload) => {

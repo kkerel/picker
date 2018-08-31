@@ -69,7 +69,9 @@ export default {
           {
             title: '참여도'
           }
-        ]
+        ],
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   },
@@ -80,9 +82,12 @@ export default {
 
   methods: {
     createCustomHTMLContent (flagURL, totalLike, totalComment, totalSaved) {
+      let total = totalLike + totalComment + totalSaved
       return '<div style="padding:5px 5px 5px 5px;">' +
         '<img src="' + flagURL + '" style="width:75px;height:50px"><br/>' +
         '<table class="medals_layout">' + '<tr>' +
+        '<td>TOTAL: </td>' +
+        '<td><b>' + total + '</b></td>' + '</tr>' + '<tr>' +
         '<td>좋아요: </td>' +
         '<td><b>' + totalLike + '</b></td>' + '</tr>' + '<tr>' +
         '<td>댓글: </td>' +

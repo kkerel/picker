@@ -75,7 +75,9 @@ export default {
             minValue: 0,
             maxValue: 10
           }
-        ]
+        ],
+        responsive: true,
+        maintainAspectRatio: false
       }
     }
   },

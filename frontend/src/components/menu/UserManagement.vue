@@ -5,12 +5,9 @@
         <div class="user_board_wrap">
           <!-- 탭 네비 -->
           <div class="pick_tab">
-            <!--<div @click="wTabs(0,'wTab')" v-bind:class="[(wTab.tab1 === true) ? 'active' : '']">기존당첨자</div>-->
-            <!--<div @click="wTabs(1,'wTab')" v-bind:class="[(wTab.tab2 === true) ? 'active' : '']">블랙리스트</div>-->
             <router-link to="/main/user_management/winnerlist">기존당첨자</router-link>
             <router-link to="/main/user_management/blacklist">블랙리스트</router-link>
           </div>
-          <ui-search/>
           <!-- 탭 네비 컨텐츠 -->
           <div class="pick_tab_contents">
             <router-view @moveToMedia="moveToMedia"></router-view>
@@ -22,13 +19,11 @@
 </template>
 
 <script>
-import Search from '@/components/ui/Search'
-import Winnerlist from '@/components/ui/Winnerlist'
-import Blacklist from '@/components/ui/Blacklist'
+import Winnerlist from '@/components/ui/board/Winnerlist'
+import Blacklist from '@/components/ui/board/Blacklist'
 
 export default {
   components: {
-    'ui-search': Search,
     'ui-winnerlist': Winnerlist,
     'ui-blacklist': Blacklist
   },

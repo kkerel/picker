@@ -13,7 +13,7 @@ import SignLogo from '@/components/sign/SignLogo'
 
 export default {
   created () {
-    this.$router.push({ name: 'SignIn' })
+    this.$router.push({ name: 'SignWrap' })
   },
   data () {
     return {

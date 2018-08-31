@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import Select from '@/components/ui/Select'
+import Select from '@/components/ui/common/Select'
 
 export default {
   name: 'Popup',

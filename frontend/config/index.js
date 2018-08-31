@@ -12,8 +12,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/': {
-        // target: 'http://dev.ig.pickdata.co.kr:8000/',
-        target: 'http://beta.picker.pickdata.co.kr/',
+        // target: 'http://dev.bigcial.com:8000/',
+        target: 'http://beta.bigcial.com/',
         changeOrigin: true,
         pathRewrite: {
           '^/': ''
@@ -22,7 +22,7 @@ module.exports = {
     },
 
     // Various Dev Server settings
-    host: 'dev.ig.pickdata.co.kr', // can be overwritten by process.env.HOST
+    host: 'dev.bigcial.com', // can be overwritten by process.env.HOST
     port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,

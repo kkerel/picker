@@ -25,14 +25,16 @@
 </template>
 
 <script>
-import Select from '@/components/ui/Select'
+import Select from '@/components/ui/common/Select'
 
 export default {
+  name: 'Blacklist',
   components: {
     'ui-select': Select
   },
   created () {
     this.getBlacklist()
+    this.$eventBus.$once('IgAccountChanged', this.replaceRoute)
   },
   data () {
     return {
@@ -41,6 +43,11 @@ export default {
     }
   },
   methods: {
+    replaceRoute () {
+      if (this.$route.name === this.$options.name) {
+        this.$router.replace({name: 'Account'})
+      }
+    },
     pick () {
       let btn = document.getElementById('pick')
       btn.classList.toggle('change_btn')
@@ -61,7 +68,7 @@ export default {
       })
     },
     deleteBlack (user) {
-      if (confirm(user.ig_username + '를 블랙리스트에서 삭제할까요?')) {
+      if (confirm(user.ig_username + '를 블랙리스트에서 삭제하시겠습니까?')) {
         this.$http.delete('/ig_blacklist/' + user.id).then(res => {
           this.getBlacklist()
           alert('블랙리스트에서 삭제 되었습니다.')

@@ -25,14 +25,16 @@
 </template>
 
 <script>
-import Select from '@/components/ui/Select'
+import Select from '@/components/ui/common/Select'
 
 export default {
+  name: 'Winnerlist',
   components: {
     'ui-select': Select
   },
   created () {
     this.getWinnerlist()
+    this.$eventBus.$once('IgAccountChanged', this.replaceRoute)
   },
   data () {
     return {
@@ -41,6 +43,11 @@ export default {
     }
   },
   methods: {
+    replaceRoute () {
+      if (this.$route.name === this.$options.name) {
+        this.$router.replace({name: 'Account'})
+      }
+    },
     getWinnerlist () {
       this.$http.get('/ig_winnerlist/', {
         params: {
@@ -57,7 +64,7 @@ export default {
       })
     },
     deleteWinner (user) {
-      if (confirm(user.ig_username + '를 기존 당첨자에서 삭제할까요?')) {
+      if (confirm(user.ig_username + '를 기존 당첨자에서 삭제하시겠습니까?')) {
         this.$http.delete('/ig_winnerlist/' + user.id).then(res => {
           this.getWinnerlist()
           alert('기존 당첨자에서 삭제 되었습니다.')

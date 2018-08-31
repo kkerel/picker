@@ -22,7 +22,7 @@
           <div class="hover"><img src="../../assets/images/icon/hashtag_i.jpg" alt=""></div>
           <div class="hover_view">
             <div class="hover_inner_view">
-              <div>영문으로 된 파일명만 업로드 가능합니다. <br>한글로된 파일명으로 업로드 시 에러가 발생 <br>하니 주의해주세요.</div>
+              <div>최대 8MB의 JPEG, PNG, BMP, 움직이지 않는 GIF 이미지만 업로드 가능합니다.</div>
             </div>
           </div>
         </div>
@@ -45,8 +45,8 @@
       </div>
       <!--버튼-->
       <div class="btn_wrap">
-        <router-link :to="{ name: 'ReservationScheduler'}" tag="button" class="black_btn">취소</router-link>
-        <button type="button" class="black_btn" @click="upload()">완료</button>
+        <button type="button" class="black_btn" @click="cancel()">취소</button>
+        <button type="button" class="black_btn" @click="upload()">저장</button>
       </div>
     </div>
     <!--우측 레이아웃-->
@@ -89,9 +89,9 @@
 </template>
 
 <script>
-import HashTag from '@/components/ui/HashTag'
+import HashTag from '@/components/ui/reservation/HashTag'
 import Draggable from 'Vuedraggable'
-import MiniCalendar from '@/components/ui/MiniCalendar'
+import MiniCalendar from '@/components/ui/reservation/MiniCalendar'
 
 export default {
   name: 'ReservationUpload',
@@ -101,30 +101,12 @@ export default {
     Draggable
   },
   created () {
-    if (this.$route.params.id !== undefined) {
-      this.$http.get('/instagram/' + this.$store.state.account.id + '/media/reservation/' + this.$route.params.id)
-        .then(res => {
-          const data = res.data.data
-
-          this.image = data.image_url
-          this.caption = data.caption
-          this.datetime = data.reserved_at
-        })
-    }
-
-    this.$http.get('/ig_account_hashtag/custom', {
-      params: {
-        instagram_business_account_id: this.$store.state.account.id
-      }
-    }).then(res => {
-      const data = res.data.data
-      this.customHashTags = data
-    }).catch(err => {
-      console.log(err)
-    })
+    this.callIgAccountPermissionAPI()
+    this.$eventBus.$once('IgAccountChanged', this.replaceRoute)
   },
   data () {
     return {
+      permission: null,
       customHashTags: [],
       image: require('../../assets/images/common/upload_example.png'),
       caption: '',
@@ -139,11 +121,58 @@ export default {
 
       if (currentDatetime > reservationDatetime) {
         this.datetime = '날짜 선택'
-        alert('현재보다 이전 시간입니다.')
+        alert('예약 업로드는 현재 시간 이후에만 가능합니다.')
       }
     }
   },
   methods: {
+    replaceRoute () {
+      if (this.$route.name === this.$options.name) {
+        this.$router.replace({name: 'ReservationScheduler'})
+      }
+    },
+    callIgAccountPermissionAPI () {
+      this.$http.get('/instagram/' + this.$store.state.account.id + '/page_perms', {
+        params: {
+          fb_access_token: localStorage.getItem('fb-access-token')
+        }
+      }).then(res => {
+        const data = res.data.data
+        this.permission = data['permission']
+        if (this.permission === 'PAGE_ADMIN' || this.permission === 'PAGE_EDITOR') {
+          if (this.$route.params.id !== undefined) {
+            this.callIgAccountReservedMediaAPI()
+          }
+          this.callIgAccountCustomHashtagAPI()
+        } else {
+          alert('게시물 생성 권한이 없습니다')
+          this.$router.go(-1)
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    callIgAccountReservedMediaAPI () {
+      this.$http.get('/instagram/' + this.$store.state.account.id + '/media/reservation/' + this.$route.params.id)
+        .then(res => {
+          const data = res.data.data
+          this.image = data.image_url
+          this.caption = data.caption
+          this.datetime = data.reserved_at
+        })
+    },
+    callIgAccountCustomHashtagAPI () {
+      this.$http.get('/ig_account_hashtag/custom', {
+        params: {
+          instagram_business_account_id: this.$store.state.account.id
+        }
+      }).then(res => {
+        const data = res.data.data
+        this.customHashTags = data
+      }).catch(err => {
+        console.log(err)
+      })
+    },
     dragStart () {
       this.dragText = event.srcElement.childNodes[0].data.replace('#', '')
     },
@@ -186,51 +215,66 @@ export default {
       }
       reader.readAsDataURL(event.target.files[0])
     },
+    cancel () {
+      if (confirm('작성을 취소하시겠습니까? 확인을 누르면 현재 작성중인 내용이 삭제됩니다.') === true) {
+        this.$router.push({'name': 'ReservationScheduler'})
+      }
+    },
     upload () {
-      if (confirm(this.$store.state.account.username + ' 계정으로 게시물 업로드 예약을 합니다.') === true) {
-        let formData = new FormData()
+      if (this.datetime === '') {
+        alert('업로드 일정을 선택해 주세요.')
+      } else if (typeof this.image === 'string') {
+        alert('업로드된 파일이 없습니다.')
+      } else if (this.permission === 'PAGE_ADMIN' || this.permission === 'PAGE_EDITOR') {
+        if (confirm(this.$store.state.account.username + ' 계정으로 게시물 업로드 예약을 합니다.') === true) {
+          let formData = new FormData()
 
-        if (typeof this.image !== 'string') {
-          formData.append('image_url', this.image)
-        }
-        formData.append('fb_access_token', localStorage.getItem('fb-access-token'))
-        formData.append('fb_user', this.$store.state.fbAccount.id)
-        formData.append('caption', this.caption)
-        formData.append('reserved_at', this.$moment(this.datetime).format('YYYY-MM-DD HH:mm'))
+          if (typeof this.image !== 'string') {
+            formData.append('image_url', this.image)
+          }
+          formData.append('fb_access_token', localStorage.getItem('fb-access-token'))
+          formData.append('fb_user', this.$store.state.fbAccount.id)
+          formData.append('caption', this.caption)
+          formData.append('reserved_at', this.$moment(this.datetime).format('YYYY-MM-DD HH:mm'))
+          formData.append('user', this.$store.state.solutionAccount.id)
 
-        if (this.$route.params.id === undefined) {
-          this.$http.post('/instagram/' + this.$store.state.account.id + '/media/reservation', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'x-access-token': localStorage.getItem('local-access-token')
-            }
-          }).then(res => {
-            const data = res.data
-            if (data.success === 'YES') {
+          if (this.$route.params.id === undefined) {
+            this.$http.post('/instagram/' + this.$store.state.account.id + '/media/reservation', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                'x-access-token': localStorage.getItem('local-access-token')
+              }
+            }).then(res => {
+              const data = res.data
+              if (data.success === 'YES') {
+                alert(this.$moment(this.datetime).format('YYYY-MM-DD A hh:mm') + '에 게시물 업로드 예약되었습니다.')
+              } else {
+                throw data.msg
+              }
+              this.$router.push({name: 'ReservationScheduler'})
+            }).catch(err => {
+              console.log(err)
+              alert('게시물 업로드 예약을 실패했습니다.')
+            })
+          } else {
+            this.$http.put('/instagram/' + this.$store.state.account.id + '/media/reservation/' + this.$route.params.id, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                'x-access-token': localStorage.getItem('local-access-token')
+              }
+            }).then(res => {
+              console.log(res)
               alert(this.$moment(this.datetime).format('YYYY-MM-DD A hh:mm') + '에 게시물 업로드 예약되었습니다.')
-            } else {
-              throw data.msg
-            }
-            this.$router.push({ name: 'ReservationScheduler' })
-          }).catch(err => {
-            console.log(err)
-            alert('게시물 업로드 예약을 실패했습니다.')
-          })
-        } else {
-          this.$http.put('/instagram/' + this.$store.state.account.id + '/media/reservation/' + this.$route.params.id, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'x-access-token': localStorage.getItem('local-access-token')
-            }
-          }).then(res => {
-            console.log(res)
-            alert(this.$moment(this.datetime).format('YYYY-MM-DD A hh:mm') + '에 게시물 업로드 예약되었습니다.')
-            this.$router.push({ name: 'ReservationScheduler' })
-          }).catch(err => {
-            console.log(err)
-            alert('게시물 업로드 예약을 실패했습니다.')
-          })
+              this.$router.push({name: 'ReservationScheduler'})
+            }).catch(err => {
+              console.log(err)
+              alert('게시물 업로드 예약을 실패했습니다.')
+            })
+          }
         }
+      } else {
+        alert('게시물 생성 권한이 없습니다')
+        this.$router.go(-1)
       }
     }
   }
@@ -253,7 +297,7 @@ export default {
               & + .hover_view{display:block;}
             }
           }
-          .hover_view{display:none; width:258px; position:absolute; top:-70px; left:5px; z-index:1; background:url(../../assets/images/icon/view_bg.png) left 56px no-repeat; color:#fff; font-size:12px; padding-bottom:15px;
+          .hover_view{display:none; width:258px; position:absolute; top:-100px; left:5px; z-index:1; background:url(../../assets/images/icon/view_bg.png) left 70px no-repeat; color:#fff; font-size:12px; padding-bottom:15px;
             .hover_inner_view{background:#464160; padding:14px;}
           }
         }
